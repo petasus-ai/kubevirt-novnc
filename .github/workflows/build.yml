@@ -1,0 +1,35 @@
+name: Build and Push Docker Image
+
+on:
+  push: {}  # Trigger on every push; branch filtering is done within the steps
+
+jobs:
+  production:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup QEMU
+        run: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+      - name: Create Docker Buildx Builder
+        run: |
+          export DOCKER_CLI_EXPERIMENTAL=enabled
+          # The context creation might fail if it already exists, so we ignore errors.
+          docker context create multi-arch-build || true
+          docker buildx create --use multi-arch-build
+
+      - name: Login to Quay.io Container Registry
+        env:
+          QUAY_CI_BOT_SECRET: ${{ secrets.QUAY_CI_BOT_SECRET }}
+        run: |
+          echo "$QUAY_CI_BOT_SECRET" | docker login quay.io -u edgestack --password-stdin
+
+      - name: Build multiarch docker image and push
+        if: github.ref_name == 'main'
+        run: |
+          DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --push \
+            --platform linux/arm64/v8,linux/amd64 \
+            --tag quay.io/edgestack/kv-vnc:latest .
