@@ -1,0 +1,18 @@
+annotations:
+  category: Infrastructure
+apiVersion: v1
+appVersion: "v3.5.1"
+description: A Helm chart for virtvnc deployment
+home: https://github.com/petasus-ai/kubevirt-novnc
+keywords:
+- MEC
+- SDN
+- Kubevirt
+- Kubernetes
+maintainers:
+- email: gunine@sk.com
+  name: Jian Li
+name: virtvnc
+sources:
+- https://github.com/petasus-ai/kubevirt-novnc
+version: 3.5.1

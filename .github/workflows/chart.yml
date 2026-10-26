@@ -1,0 +1,45 @@
+name: Chart
+
+# Publishes the virtvnc chart (deployment/virtvnc) to petasus-ai/edgestack-helm with the
+# shared actions of petasus-ai/.github: a push to main that changes it replaces 0.0.0-dev
+# on the dev channel, and a tag vX.Y.Z on release-X.Y publishes X.Y.Z on the stable
+# channel, with appVersion vX.Y.Z for the kv-vnc image of the same tag. It moved here from
+# petasus-ai/virtvnc-helm, which published 0.1.0.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deployment/**'
+    tags: ["v*"]
+  workflow_dispatch: {}
+
+concurrency:
+  group: chart-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  dev:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish 0.0.0-dev to the dev channel
+        uses: petasus-ai/.github/actions/publish-chart@1635454a4fc43d16be6bdaae33feb3204ef8c922
+        with:
+          chart: deployment/virtvnc
+          channel: dev
+          token: ${{ secrets.MY_TOKEN }}
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: petasus-ai/.github/actions/guard-release-tag@987c4fc41f565d88e8879d2e204ff0d2ef369605
+      - name: Publish the release to the stable channel
+        uses: petasus-ai/.github/actions/publish-chart@1635454a4fc43d16be6bdaae33feb3204ef8c922
+        with:
+          chart: deployment/virtvnc
+          channel: stable
+          version: ${{ github.ref_name }}
+          token: ${{ secrets.MY_TOKEN }}
