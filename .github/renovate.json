@@ -1,4 +1,16 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>petasus-ai/.github//renovate/default"]
+  "extends": ["github>petasus-ai/.github//renovate/default"],
+  "packageRules": [
+    {
+      "description": "kv-vnc runs kubectl proxy against the hub API server, and kubectl has to stay within one minor of the hub Kubernetes, so a kubectl minor waits for review while the patches of the current minor merge themselves.",
+      "matchPackageNames": ["alpine/kubectl"],
+      "separateMinorPatch": true
+    },
+    {
+      "matchPackageNames": ["alpine/kubectl"],
+      "matchUpdateTypes": ["major", "minor"],
+      "automerge": false
+    }
+  ]
 }
